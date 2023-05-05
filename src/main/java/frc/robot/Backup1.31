@@ -1,0 +1,201 @@
+/*----------------------------------------------------------------------------*/
+/* Copyright (c) 2017-2018 FIRST. All Rights Reserved.                        */
+/* Open Source Software - may be modified and shared by FRC teams. The code   */
+/* must be accompanied by the FIRST BSD license file in the root directory of */
+/* the project.                                                               */
+/*----------------------------------------------------------------------------*/
+
+package frc.robot;
+
+import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.can.VictorSPX;
+import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.PowerDistributionPanel;
+import edu.wpi.first.cameraserver.CameraServer; 
+import edu.wpi.first.wpilibj.Compressor;
+import edu.wpi.first.wpilibj.Solenoid; 
+
+
+/**
+ * The VM is configured to automatically run this class, and to call the
+ * functions corresponding to each mode, as described in the TimedRobot
+ * documentation. If you change the name of this class or the package after
+ * creating this project, you must also update the build.gradle file in the
+ * project.
+ */
+public class Robot127 extends TimedRobot {
+ 
+  VictorSPX victor1 = new VictorSPX(1); 
+  VictorSPX victor2 = new VictorSPX(2);
+  VictorSPX victor3 = new VictorSPX(3);
+  VictorSPX victor4 = new VictorSPX(4);
+  boolean RbIsPressed = false;
+  boolean LbIsPressed = false;
+  Joystick jstick = new Joystick(0);
+  Joystick jstick2 = new Joystick(1);
+  double MotormoveL;   //drive train??
+  double MotormoveR;
+  double Lstick;
+  double Rstick; 
+  int speed = 1;
+  boolean RBIsPressed = false;
+  boolean LBIsPressed = false;
+ PowerDistributionPanel pdp = new PowerDistributionPanel(0);
+ Compressor c = new Compressor(0); 
+ private Solenoid s1 = new Solenoid(0);
+ private Solenoid s2 = new Solenoid(1) ;
+
+  /**
+   * This function is run when the robot is first started up and should be
+   * used for any initialization code.
+   */
+  @Override
+  public void robotInit() {
+    victor4.setInverted(true);
+    victor3.setInverted(true);
+    victor2.setInverted(false);
+    victor1.setInverted(false);
+    Double StickL = jstick.getRawAxis(1);
+    Double StickR = jstick2.getRawAxis(1); 
+    victor4.set(ControlMode.PercentOutput, StickL);
+    victor3.set(ControlMode.PercentOutput, StickL);
+    victor2.set(ControlMode.PercentOutput, StickL);
+    victor1.set(ControlMode.PercentOutput, StickL);
+    CameraServer.getInstance().startAutomaticCapture(); 
+    c.setClosedLoopControl(true);
+
+  }
+    
+
+  
+
+  @Override
+  public void autonomousInit() {
+    /*m_autoSelected = m_chooser.getSelected();
+    // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
+    System.out.println("Auto selected: " + m_autoSelected);
+    */
+     teleopInit(); 
+  }
+
+  /**
+   * This function is called periodically during autonomous.
+   */
+  @Override
+  public void autonomousPeriodic() {
+      teleopPeriodic(); 
+    }
+  
+
+  /**
+   * This function is called periodically during operator control.
+   */
+  @Override
+  public void teleopInit() {
+
+    Double StickL = jstick.getRawAxis(1);
+    Double StickR = jstick2.getRawAxis(1); 
+    victor4.set(ControlMode.PercentOutput, StickL);
+    victor3.set(ControlMode.PercentOutput, StickL);
+    victor2.set(ControlMode.PercentOutput, StickL);
+    victor1.set(ControlMode.PercentOutput, StickL);
+    c.setClosedLoopControl(true);
+  }
+  @Override
+  public void teleopPeriodic() {
+    //boolean RB = jstick.getRawButton(6);
+    //boolean LB = jstick.getRawButton(5); 
+    Double speed = (jstick.getRawAxis(3)-1)*-2;
+    Double speedTurn = (jstick.getRawAxis(3)-1)*-2;
+    Double StickL = jstick.getRawAxis(1);
+    //Double Steer = jstick.getRawAxis(0)*0.4; // x-axis turning
+    //Double Steer2 = (jstick.getRawAxis(0)*-0.4); // x-axis turning
+     Double Steer = (jstick.getRawAxis(2)*0.4)*speedTurn; // z-axis turning
+     Double Steer2 = ((jstick.getRawAxis(2)*-0.4)*speedTurn); // z-axis Turning
+    c.setClosedLoopControl(true);
+    if (Steer >-0.05 && Steer<0.05) 
+    {
+      Steer=0.0;
+    } 
+    if (Steer2 >-0.05 && Steer2<0.05) 
+    {
+      Steer2=0.0;
+    } 
+    if (jstick.getRawButton(1))
+    {
+      victor4.set(ControlMode.PercentOutput, 0);
+      victor3.set(ControlMode.PercentOutput, 0);
+      victor2.set(ControlMode.PercentOutput, 0);
+      victor1.set(ControlMode.PercentOutput, 0);
+       
+    }
+    else 
+    {
+      victor4.set(ControlMode.PercentOutput, (0.25*StickL*speed)+(0.75*Steer2));
+      victor3.set(ControlMode.PercentOutput, (0.25*StickL*speed)+(0.75*Steer2));
+      victor2.set(ControlMode.PercentOutput, (0.25*StickL*speed)+(0.75*Steer));
+      victor1.set(ControlMode.PercentOutput, (0.25*StickL*speed)+(0.75*Steer));
+    }
+    /* if (RB == true && RBIsPressed == false )  
+    {
+       speed = speed + 1;
+       if (speed > 4)
+       {
+         speed = 1;
+       }    
+    }
+    if (LB == true && LBIsPressed == false)  //right button is now pressed, but it wasn't pressed before
+    {
+       speed = speed - 1;
+       if (speed < 1)
+       {
+         speed = 4;
+       }    
+    }
+    RBIsPressed = RB;
+    LBIsPressed = LB;
+    */
+System.out.println(c.getPressureSwitchValue());
+  }
+
+  /**
+   * This function is called periodically during test mode.
+   */
+  @Override
+  public void testInit() {
+    Double StickL = jstick.getRawAxis(1);
+    Double StickR = jstick2.getRawAxis(1); 
+    victor4.set(ControlMode.PercentOutput, StickL);
+    victor3.set(ControlMode.PercentOutput, StickL);
+    victor2.set(ControlMode.PercentOutput, StickL);
+    victor1.set(ControlMode.PercentOutput, StickL);
+  }
+  @Override
+  public void testPeriodic() {
+    boolean RB = jstick.getRawButton(6);
+    boolean LB = jstick.getRawButton(5);
+    Double StickL = jstick.getRawAxis(1); 
+    victor4.set(ControlMode.PercentOutput, (0.1*StickL*speed));
+    victor3.set(ControlMode.PercentOutput, (0.1*StickL*speed));
+    victor2.set(ControlMode.PercentOutput, (0.1*StickL*speed));
+    victor1.set(ControlMode.PercentOutput, (0.1*StickL*speed));
+    if (RB == true )  
+    {
+       speed = speed + 1;
+       if (speed > 3)
+       {
+         speed = 3;
+       }    
+    }
+    else if (LB == true)  //right button is now pressed, but it wasn't pressed before
+    {
+       speed = speed - 1;
+       if (speed < 1)
+       {
+         speed = 1;
+       }    
+    }
+  }
+  
+}
